@@ -1,0 +1,196 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>路线详情</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+
+            header nav a {
+                color: white;
+                margin: 0 15px;
+                text-decoration: none;
+            }
+
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 60px; /* header height */
+            bottom: 0;
+            overflow-y: auto; /* Enable scrolling */
+        }
+
+            .sidebar h3 {
+                margin-top: 0;
+            }
+
+        .content {
+            margin-left: 270px; /* Space for sidebar */
+            padding: 20px;
+            flex-grow: 1;
+            margin-top: 60px; /* Space for header */
+        }
+
+        .map {
+            height: 500px; /* Set a height for the map */
+            background-color: #e0e0e0; /* Placeholder for map */
+        }
+    </style>
+    <!-- 引入百度地图 API -->
+    <script src="https://api.map.baidu.com/api?v=3.0&ak=Ot7XY7J7zo80JElGmESaCujhAh07qxo4"></script>
+</head>
+<body>
+
+    <header>
+        <div class="logo">旅游网站</div>
+        <nav>
+            <a href="index.html">主页</a>
+            <a href="#">路线推荐</a>
+            <a href="#">旅游攻略</a>
+            <a href="#">联系我们</a>
+        </nav>
+    </header>
+
+    <div class="sidebar">
+        <h3>推荐路线</h3>
+        <ul>
+            <li><a href="#" onclick="updateMap('route1')">路线名称1</a></li>
+            <li><a href="#" onclick="updateMap('route2')">路线名称2</a></li>
+            <li><a href="#" onclick="updateMap('route3')">路线名称3</a></li>
+            <li><a href="#" onclick="updateMap('route4')">路线名称4</a></li>
+            <li><a href="#" onclick="updateMap('route5')">路线名称5</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h2 id="route-title">选择一条路线</h2>
+        <div class="map" id="map"></div>
+        <p id="route-description">请点击左侧的路线以查看详情。</p>
+        <button onclick="getLocation()">获取实时位置</button>
+        <p id="location-info"></p>
+    </div>
+
+    <script>
+    // 定义地图变量
+    let map;
+    let userMarker = null; // 用户位置的标记
+
+    // 初始化地图
+    function initMap() {
+        // 默认地图中心点（例如：北京）
+        const defaultLocation = new BMapGL.Point(116.404, 39.915); // 北京坐标
+
+        map = new BMapGL.Map("map");
+        map.centerAndZoom(defaultLocation, 15); // 设置地图中心点和缩放级别
+        map.enableScrollWheelZoom(true); // 开启滚轮缩放
+
+        // 初始化一个默认标记
+        userMarker = new BMapGL.Marker(defaultLocation);
+        map.addOverlay(userMarker);
+        userMarker.setTitle("您的位置");
+    }
+
+    // 获取实时位置
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+            document.getElementById("location-info").innerText = "不支持地理定位。";
+        }
+    }
+
+    // 显示实时位置
+    function showPosition(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        document.getElementById("location-info").innerText = "您的实时位置: 纬度: " + latitude + ", 经度: " + longitude;
+
+        // 更新地图中心并移动标记
+        const userLocation = new BMapGL.Point(longitude, latitude);
+
+        map.setCenter(userLocation); // 将地图中心移到用户位置
+        userMarker.setPosition(userLocation); // 更新用户位置的标记
+    }
+
+    // 处理定位错误
+    function showError(error) {
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                document.getElementById("location-info").innerText = "用户拒绝了请求地理定位。";
+                break;
+            case error.POSITION_UNAVAILABLE:
+                document.getElementById("location-info").innerText = "位置信息不可用。";
+                break;
+            case error.TIMEOUT:
+                document.getElementById("location-info").innerText = "请求获取用户位置超时。";
+                break;
+            case error.UNKNOWN_ERROR:
+                document.getElementById("location-info").innerText = "发生未知错误。";
+                break;
+        }
+    }
+
+    // 更新路线信息
+    function updateMap(routeKey) {
+        const routes = {
+            route1: {
+                title: "路线名称1",
+                description: "这里是路线名称1的详细描述，包括活动、景点、注意事项等信息。",
+                mapSrc: "https://www.google.com/maps/embed?pb=..."
+            },
+            route2: {
+                title: "路线名称2",
+                description: "这里是路线名称2的详细描述，包括活动、景点、注意事项等信息。",
+                mapSrc: "https://www.google.com/maps/embed?pb=..."
+            },
+            route3: {
+                title: "路线名称3",
+                description: "这里是路线名称3的详细描述，包括活动、景点、注意事项等信息。",
+                mapSrc: "https://www.google.com/maps/embed?pb=..."
+            },
+            route4: {
+                title: "路线名称4",
+                description: "这里是路线名称4的详细描述，包括活动、景点、注意事项等信息。",
+                mapSrc: "https://www.google.com/maps/embed?pb=..."
+            },
+            route5: {
+                title: "路线名称5",
+                description: "这里是路线名称5的详细描述，包括活动、景点、注意事项等信息。",
+                mapSrc: "https://www.google.com/maps/embed?pb=..."
+            }
+        };
+
+        const route = routes[routeKey];
+        document.getElementById('route-title').innerText = route.title;
+        document.getElementById('route-description').innerText = route.description;
+    }
+
+    // 在页面加载时初始化百度地图
+    window.onload = initMap;
+    </script>
+
+</body>
+</html>
